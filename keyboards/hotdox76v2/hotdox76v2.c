@@ -5,8 +5,9 @@
 #include "hotdox76v2.h"
 #include <string.h>
 #include <transactions.h>
-#include "oled_font_lib/logo2.h"
+// #include "oled_font_lib/logo2.h"
 #include "oled_font_lib/ext_font.h"
+#include "oled_font_lib/logo2.h"
 
 
 #ifdef RGB_MATRIX_ENABLE
@@ -128,20 +129,20 @@ void render_layer_helper_fun(uint8_t start_line, const char *data, uint8_t gap_w
     }
 }
 void render_layer(uint8_t layer) {
-    render_layer_helper_fun(0, PSTR("LAYER:"), 12, 6);
+    // render_layer_helper_fun(0, PSTR("LAYER:"), 12, 6);
     switch (layer) {
         case 0:
-            render_layer_helper_fun(1, PSTR("1:HOME"), 12, 6);
+            render_layer_helper_fun(1, PSTR("1:Mac"), 12, strlen_P(PSTR("1:Mac")));
             break;
         case 1:
-            render_layer_helper_fun(1, PSTR("2:CODE"), 12, 6);
+            render_layer_helper_fun(1, PSTR("2:Linux"), 12, strlen_P(STR("2:Linux")));
             break;
         case 2:
-            render_layer_helper_fun(1, PSTR("3:OFFICE"), 0, 8);
+            render_layer_helper_fun(1, PSTR("3:Func"), 0, strlen_P(PSTR("3:Func")));
             break;
         case 3:
         default:
-            render_layer_helper_fun(1, PSTR("4:OTHERS"), 0, 8);
+            render_layer_helper_fun(1, PSTR("4:Other"), 0,strlen_P(PSTR("4:Other")));
             break;
     }
 }
@@ -174,16 +175,19 @@ void render_cur_input(void) {
     return;
 }
 
+
+
 bool oled_task_kb(void) {
     if (!oled_task_user()) {
         return false;
     }
     render_logo();
-    if (is_keyboard_left()) {
-        render_layer(biton32(layer_state));
-    } else {
+    if (is_keyboard_master()) {
         render_cur_input();
+    }else {
+        render_layer(biton32(layer_state));
     }
+   
     return false;
 }
 

@@ -9,15 +9,19 @@
  *  These options are also useful to firmware size reduction.
  */
 
-/* disable debug print */
-//#define NO_DEBUG
+// /* disable debug print */
+#ifndef NO_DEBUG
+#define NO_DEBUG
+#endif
 
-/* disable print */
-//#define NO_PRINT
+// /* disable print */
+#ifndef NO_PRINT
+#define NO_PRINT
+#endif
 
-/* disable action features */
-//#define NO_ACTION_LAYER
-//#define NO_ACTION_TAPPING
-//#define NO_ACTION_ONESHOT
+// /* disable action features */
+// #define NO_ACTION_LAYER
+// #define NO_ACTION_TAPPING
+// #define NO_ACTION_ONESHOT
 
 #define SPLIT_TRANSACTION_IDS_KB KEYBOARD_CURRENT_ALPA_SYNC
