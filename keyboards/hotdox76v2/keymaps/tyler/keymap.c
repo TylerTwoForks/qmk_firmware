@@ -10,16 +10,10 @@ enum custom_keycodes {
     MAC_HOME,
 };
 
-enum layers {
-        _MAC,
-        _LINUX,
-        _FUNC,
-        _OTHER
-}; 
+enum layers { _MAC, _LINUX, _FUNC, _OTHER };
 
-
-static bool          is_suspended;
-void set_rgblight_by_layer(uint32_t layer) {
+static bool is_suspended;
+void        set_rgblight_by_layer(uint32_t layer) {
     if (is_suspended) {
         return;
     }
@@ -43,13 +37,12 @@ void set_current_layer_rgb(void) {
     set_rgblight_by_layer(get_highest_layer(layer_state | default_layer_state));
 }
 
-void keyboard_post_init_user(void){ 
-     
-        // Set RGB to solid white at full brightness
-        rgblight_enable_noeeprom();
-        rgblight_mode_noeeprom(1);
-        rgblight_sethsv_noeeprom(0, 0, 255);  // HSV: hue=0, sat=0 (white), val=255 (max brightness)
-    //   set_current_layer_rgb(); 
+void keyboard_post_init_user(void) {
+    // Set RGB to solid white at full brightness
+    rgblight_enable_noeeprom();
+    rgblight_mode_noeeprom(1);
+    rgblight_sethsv_noeeprom(0, 0, 255); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
+    //   set_current_layer_rgb();
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -58,7 +51,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case FUNC_TOGGLE:
             if (record->event.pressed) {
-                func_layer_timer = timer_read();  // Record the press time
+                func_layer_timer = timer_read(); // Record the press time
             } else {
                 if (timer_elapsed(func_layer_timer) < TAPPING_TERM) {
                     // TAP: send one-shot layer
@@ -72,10 +65,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false; // Skip normal processing
         case MAC_END:
             if (record->event.pressed) {
-                register_code(KC_LGUI);        // Command down
-                register_code(KC_RGHT);        // Right down
-                unregister_code(KC_RGHT);      // Right up
-                unregister_code(KC_LGUI);      // Command up
+                register_code(KC_LGUI);   // Command down
+                register_code(KC_RGHT);   // Right down
+                unregister_code(KC_RGHT); // Right up
+                unregister_code(KC_LGUI); // Command up
             }
             return false; // Skip default behavior
         case MAC_HOME:
@@ -86,7 +79,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_LEFT_GUI);
             }
             return false;
-            
     }
     return true;
 }
