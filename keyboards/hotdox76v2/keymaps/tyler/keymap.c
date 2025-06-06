@@ -4,6 +4,8 @@
 
 #include QMK_KEYBOARD_H
 
+enum layers { _MAC, _LINUX, _FUNC, _OTHER };
+
 enum custom_keycodes {
     FUNC_TOGGLE = SAFE_RANGE,
     MAC_COPY, 
@@ -11,49 +13,65 @@ enum custom_keycodes {
     CTRL_COPY,
     CTRL_PASTE,
     MAC_END,
-    MAC_HOME,
+    MAC_HOME
 };
 
-enum layers { _MAC, _LINUX, _FUNC, _OTHER };
+enum combos{
+    OS_LSFT,
+    OS_RSFT
+};
 
-static bool is_suspended;
-void        set_rgblight_by_layer(uint32_t layer) {
-    if (is_suspended) {
-        return;
-    }
-    switch (layer) {
-        case _MAC:
-            rgblight_sethsv_noeeprom(RGB_WHITE);
-            break;
-        case _LINUX:
-            rgblight_sethsv_noeeprom(RGB_BLUE);
-            break;
-        case _FUNC:
-            rgblight_sethsv_noeeprom(RGB_YELLOW);
-            break;
-        default:
-            rgblight_sethsv_noeeprom(RGB_GREEN);
-            break;
-    }
-}
+const uint16_t PROGMEM lsft_combo[] = {KC_F, KC_D, COMBO_END};
+const uint16_t PROGMEM rsft_combo[] = {KC_J, KC_K, COMBO_END};
+combo_t key_combos[] = {
+    [OS_LSFT] = COMBO_ACTION(lsft_combo),
+    [OS_RSFT] = COMBO_ACTION(rsft_combo),
+};
 
-void set_current_layer_rgb(void) {
-    set_rgblight_by_layer(get_highest_layer(layer_state | default_layer_state));
-}
+bool combo_held = false;
+static uint16_t combo_timer;
+void process_combo_event(uint16_t combo_index, bool pressed) {
+    switch(combo_index) {
+        case OS_LSFT:
+            if (pressed) {
+                combo_timer = timer_read();
+                register_mods(MOD_BIT(KC_LSFT));  // Hold starts now
+            } else {
+                if (timer_elapsed(combo_timer) < TAPPING_TERM) {
+                    // Tap: oneshot shift
+                    set_oneshot_mods(MOD_BIT(KC_LSFT));
+                }
+                unregister_mods(MOD_BIT(KC_LSFT));  // Always unregister after release
+            }
+            break;
+        case OS_RSFT:
+            if (pressed) {
+                combo_timer = timer_read();
+                register_mods(MOD_BIT(KC_RSFT));  // Hold starts now
+            } else {
+                if (timer_elapsed(combo_timer) < TAPPING_TERM) {
+                    // Tap: oneshot shift
+                    set_oneshot_mods(MOD_BIT(KC_RSFT));
+                }
+                unregister_mods(MOD_BIT(KC_RSFT));  // Always unregister after release
+            }
+            break;   
+    }
+};
 
 void keyboard_post_init_user(void) {
     // Set RGB to solid white at full brightness
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(1);
     rgblight_sethsv_noeeprom(0, 0, 255); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
-    //   set_current_layer_rgb();
-}
+};
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static uint16_t func_layer_timer;
     static uint16_t macro_timer;
 
     switch (keycode) {
+
         case FUNC_TOGGLE:
             if (record->event.pressed) {
                 func_layer_timer = timer_read(); // Record the press time
@@ -142,14 +160,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
     }
     return true;
-}
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //KeymapCEditor - keymap.c viewer and editor - I use this extension to view the keymaps in a more ui friendly way for quick mental parsing.  
     [_MAC] = LAYOUT_ergodox_pretty(
         KC_GRV,  KC_1,               KC_2,           KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,          KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
         KC_DEL,  KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
-        KC_ESC,  LALT_T(KC_A),       LGUI_T(KC_S),   LCTL_T(KC_D), LSFT_T(KC_F),  KC_G,                                                  KC_H,    RSFT_T(KC_J), RCTL_T(KC_K), RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
+        KC_ESC,  LALT_T(KC_A),       LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                                  KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
         KC_LSFT, MT(MOD_LCTL, KC_Z), KC_X,           MAC_COPY,     MAC_PASTE,     KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
         KC_LCTL, KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        KC_LBRC,      TO(_LINUX),           TO(_LINUX),
                                                                                                         KC_LALT, KC_LGUI,             KC_RALT, KC_A,
@@ -160,9 +178,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_LINUX] = LAYOUT_ergodox_pretty(
         KC_GRV,  KC_1,              KC_2,         KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,           KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
         KC_DEL,  KC_Q,              KC_W,         KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET,  KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
-        KC_ESC,  LGUI_T(KC_A),      LCTL_T(KC_S), LALT_T(KC_D), LSFT_T(KC_F),  KC_G,                                                   KC_H,    RSFT_T(KC_J), RALT_T(KC_K), RCTL_T(KC_L), RGUI_T(KC_SCLN),   KC_QUOT,
-        KC_LSFT, MT(MOD_LCTL, KC_Z),KC_X,         CTRL_COPY,    CTRL_PASTE,          KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_LCTL, KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_FUNC),      TO(_FUNC),           TO(_MAC),
+        KC_ESC,  KC_A,              LCTL_T(KC_S), KC_D,         KC_F,          KC_G,                                                   KC_H,    KC_J,         KC_K,         RCTL_T(KC_L), KC_SCLN,           KC_QUOT,
+        KC_LSFT, MT(MOD_LCTL, KC_Z),KC_X,         CTRL_COPY,    CTRL_PASTE,    KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
+        KC_LCTL, KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_FUNC),    TO(_FUNC),       TO(_MAC),
                                                                                                         KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                                      KC_PGUP,            KC_HOME,
                                                                                             KC_BSPC, KC_ENT, KC_TAB,             KC_END, KC_ENT, KC_SPC
