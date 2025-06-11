@@ -81,7 +81,6 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
             break;
     }
 };
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static uint16_t func_layer_timer;
     static uint16_t macro_timer;
@@ -152,7 +151,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case MAC_COPY:
             if (record->event.pressed) {
-                func_layer_timer = timer_read(); // Record the press time
+                macro_timer = timer_read(); // Record the press time
             } else {
                 if (timer_elapsed(macro_timer) < TAPPING_TERM) {
                     tap_code(KC_C);  // Tap: send normal key
@@ -181,8 +180,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
     }
-    return true; };
-
+    return true; 
+};
 void keyboard_post_init_user(void) {
     // Set RGB to solid white at full brightness
     rgblight_enable_noeeprom();
@@ -193,7 +192,8 @@ void keyboard_post_init_user(void) {
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
     switch (keycode) {
         case LGUI_MT_A:
-            return 300;
+        case LALT_MT_A: 
+            return 320;
         default: 
             return TAPPING_TERM; 
     }
@@ -204,12 +204,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_MAC] = LAYOUT_ergodox_pretty(
         KC_GRV,      KC_1,               KC_2,           KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,          KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
         KC_DEL,      KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
-        KC_ESC,      LALT_T(KC_A),       LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                                  KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
+        KC_ESC,      LALT_MT_A,          LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                          KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
         OSL(_OTHER), MT(MOD_LCTL, KC_Z), KC_X,           MAC_COPY,     MAC_PASTE,     KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
         KC_CAPS,     KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        KC_LBRC,      TO(_LINUX),           TO(_LINUX),
                                                                                                         KC_LALT, KC_LGUI,             KC_RALT, KC_A,
-                                                                                                                     KC_PGUP,             MAC_HOME,
-                                                                                       KC_BSPC, OSL(_OTHER), KC_TAB,              MAC_END, OSL(_FUNC), KC_SPACE
+                                                                                                                 KC_PGUP,             MAC_HOME,
+                                                                                           KC_BSPC, OSL(_OTHER), KC_TAB,              MAC_END, OSL(_FUNC), KC_SPACE
     ),
 
     [_LINUX] = LAYOUT_ergodox_pretty(

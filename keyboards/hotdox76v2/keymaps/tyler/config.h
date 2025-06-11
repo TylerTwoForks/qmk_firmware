@@ -7,6 +7,7 @@
 #define TAPPING_TERM 250
 #define RETRO_TAPPING
 
+#define NO_AUTO_SHIFT_ALPHA
 #define AUTO_SHIFT_TIMEOUT 200
 #define RETRO_SHIFT
 #define QUICK_TAP_TERM 0
@@ -17,3 +18,4 @@
 #define RGBLIGHT_SLEEP
 
 #define LGUI_MT_A LGUI_T(KC_A)
+#define LALT_MT_A LALT_T(KC_A) 
