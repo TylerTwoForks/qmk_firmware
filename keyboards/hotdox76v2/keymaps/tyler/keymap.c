@@ -8,11 +8,9 @@
 enum layers { _MAC, _LINUX, _FUNC, _OTHER };
 
 enum custom_keycodes {
-    FUNC_TOGGLE = SAFE_RANGE,
-    MAC_COPY, 
-    MAC_PASTE,
-    CTRL_COPY,
+    CTRL_COPY = SAFE_RANGE,
     CTRL_PASTE,
+    CTRL_CUT,
     MAC_END,
     MAC_HOME,
     SPACE_CANCEL_CAPS
@@ -82,86 +80,44 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
     }
 };
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    static uint16_t func_layer_timer;
-    static uint16_t macro_timer;
+    // static uint16_t macro_timer;
+    uint8_t copy_mod = keymap_config.swap_lctl_lgui ? KC_LEFT_GUI : KC_LEFT_CTRL;
 
     switch (keycode) {
         case KC_SPACE:
-            if (!record->event.pressed){ //using the ! indicates "on key up" while removing it indicates "on key down"
-                if (host_keyboard_led_state().caps_lock){
+            if (!record->event.pressed) { // using the ! indicates "on key up" while removing it indicates "on key down"
+                if (host_keyboard_led_state().caps_lock) {
                     tap_code(KC_CAPS);
                 }
             }
-            return true; //continue normal processing
-        case FUNC_TOGGLE:
-            if (record->event.pressed) {
-                func_layer_timer = timer_read(); // Record the press time
-            } else {
-                if (timer_elapsed(func_layer_timer) < TAPPING_TERM) {
-                    // TAP: send one-shot layer
-                    layer_on(_FUNC);
-                    set_oneshot_layer(_FUNC, ONESHOT_START);
-                } else {
-                    // HOLD: activate momentary layer
-                    layer_off(_FUNC);
-                }
-            }
-            return false; // Skip normal processing
+            return true; // continue normal processing
         case CTRL_COPY:
             if (record->event.pressed) {
-                macro_timer = timer_read(); // Record the press time
-            } else {
-                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
-                    tap_code(KC_C);  // Tap: send normal key
-                }else{
-                    register_code(KC_RIGHT_CTRL);
-                    tap_code(KC_C);
-                    unregister_code(KC_RIGHT_CTRL);
-                } 
+                register_code(copy_mod);
+                // register_code(KC_RIGHT_CTRL);
+                
+                tap_code(KC_C);
+                // unregister_code(KC_RIGHT_CTRL);
+                unregister_code(copy_mod);
             }
             return false;
         case CTRL_PASTE:
             if (record->event.pressed) {
-                macro_timer = timer_read(); // Record the press time
-            } else {
-                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
-                       tap_code(KC_V);  // Tap: send normal key
-                }else{
-                    register_code(KC_RIGHT_CTRL);
-                    tap_code(KC_V);
-                    unregister_code(KC_RIGHT_CTRL);
-                } 
+                register_code(copy_mod);
+                tap_code(KC_V);
+                unregister_code(copy_mod);
             }
             return false;
-        case MAC_PASTE:
+        case CTRL_CUT:
             if (record->event.pressed) {
-                macro_timer = timer_read(); // Record the press time
-            } else {
-                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
-                    tap_code(KC_V);  // Tap: send normal key
-                }else{                
-                    register_code(KC_RIGHT_GUI);
-                    tap_code(KC_V);
-                    unregister_code(KC_RIGHT_GUI);
-                }
+                register_code(copy_mod);
+                tap_code(KC_X);
+                unregister_code(copy_mod);
             }
-            return false;
-        case MAC_COPY:
-            if (record->event.pressed) {
-                macro_timer = timer_read(); // Record the press time
-            } else {
-                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
-                    tap_code(KC_C);  // Tap: send normal key
-                }else{  
-                    register_code(KC_RIGHT_GUI);
-                    tap_code(KC_C);
-                    unregister_code(KC_RIGHT_GUI);
-                }
-            }   
             return false;
         case MAC_END:
             if (record->event.pressed) {
-                register_code(KC_LGUI);   // Command down
+                register_code(KC_LGUI); // Command down
                 tap_code(KC_RIGHT);
                 unregister_code(KC_LGUI); // Command up
             }
@@ -173,8 +129,67 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_LEFT_GUI);
             }
             return false;
+        /* case CTRL_COPY:
+            if (record->event.pressed) {
+                c_timer       = timer_read();
+                c_interrupted = false;
+
+                // Send C immediately
+                register_code(KC_C);
+            } else {
+                unregister_code(KC_C); // always release the tap
+
+                // Treat as hold if long press OR another key was hit during
+                if (timer_elapsed(c_timer) >= TAPPING_TERM || c_interrupted) {
+                    // Send Ctrl+C
+                    register_code(KC_RIGHT_CTRL);
+                    tap_code(KC_C);
+                    unregister_code(KC_RIGHT_CTRL);
+                }
+            }
+            return false;
+        case CTRL_PASTE:
+            if (record->event.pressed) {
+                macro_timer = timer_read(); // Record the press time
+            } else {
+                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
+                    tap_code(KC_V); // Tap: send normal key
+                } else {
+                    register_code(KC_RIGHT_CTRL);
+                    tap_code(KC_V);
+                    unregister_code(KC_RIGHT_CTRL);
+                }
+            }
+            return false;
+        case MAC_PASTE:
+            if (record->event.pressed) {
+                macro_timer = timer_read(); // Record the press time
+            } else {
+                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
+                    tap_code(KC_V); // Tap: send normal key
+                } else {
+                    register_code(KC_RIGHT_GUI);
+                    tap_code(KC_V);
+                    unregister_code(KC_RIGHT_GUI);
+                }
+            }
+            return false;
+        case MAC_COPY:
+            if (record->event.pressed) {
+                macro_timer = timer_read(); // Record the press time
+            } else {
+                if (timer_elapsed(macro_timer) < TAPPING_TERM) {
+                    tap_code(KC_C); // Tap: send normal key
+                } else {
+                    register_code(KC_RIGHT_GUI);
+                    tap_code(KC_C);
+                    unregister_code(KC_RIGHT_GUI);
+                }
+            }
+            return false; */
     }
-    return true; 
+
+    return true;
 };
 void keyboard_post_init_user(void) {
     // Set RGB to solid white at full brightness
@@ -188,11 +203,9 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
         case LGUI_MT_A:
         case LALT_MT_A: 
             return 320;
-        case MAC_COPY: 
-        case MAC_PASTE:
-        case CTRL_COPY:
+        /* case CTRL_COPY:
         case CTRL_PASTE:
-            return 190; 
+            return 190;  */
         default: 
             return TAPPING_TERM; 
     }
@@ -201,22 +214,22 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //KeymapCEditor - keymap.c viewer and editor - I use this extension to view the keymaps in a more ui friendly way for quick mental parsing.  
     [_MAC] = LAYOUT_ergodox_pretty(
-        KC_GRV,      KC_1,               KC_2,           KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,          KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
-        KC_DEL,      KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
-        KC_ESC,      KC_A,          LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                          KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
-        KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z), KC_X,           MAC_COPY,     MAC_PASTE,     KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,     KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        KC_LBRC,      TO(_LINUX),           TO(_LINUX),
+        KC_GRV,        KC_1,               KC_2,           KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,          KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
+        KC_DEL,        KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
+        KC_ESC,        KC_A,               LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                          KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
+        KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z), KC_X,           KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
+        KC_CAPS,       KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        KC_LBRC,      TO(_LINUX),           TO(_LINUX),
                                                                                                         KC_LALT, KC_LGUI,             KC_RALT, KC_A,
                                                                                                                  KC_PGUP,             MAC_HOME,
                                                                                            KC_BSPC, OSL(_OTHER), KC_TAB,              MAC_END, OSL(_FUNC), KC_SPACE
     ),
 
     [_LINUX] = LAYOUT_ergodox_pretty(
-        KC_GRV,      KC_1,              KC_2,         KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,           KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
-        KC_DEL,      KC_Q,              KC_W,         KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET,  KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
-        KC_ESC,      LGUI_MT_A,        LCTL_T(KC_S), KC_D,         KC_F,          KC_G,                                                   KC_H,    KC_J,         KC_K,         RCTL_T(KC_L), KC_SCLN,           KC_QUOT,
-        KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z),KC_X,         CTRL_COPY,    CTRL_PASTE,    KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,     KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_FUNC),    TO(_FUNC),       TO(_MAC),
+        KC_GRV,        KC_1,              KC_2,         KC_3,         KC_4,          KC_5,    KC_6,               KC_PSCR,           KC_7,    KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
+        KC_DEL,        KC_Q,              KC_W,         KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET,  KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
+        KC_ESC,        LGUI_MT_A,         LCTL_T(KC_S), KC_D,         KC_F,          KC_G,                                                   KC_H,    KC_J,         KC_K,         RCTL_T(KC_L), KC_SCLN,           KC_QUOT,
+        KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z),KC_X,         KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
+        KC_CAPS,       KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_FUNC),    TO(_FUNC),       TO(_MAC),
                                                                                                         KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                                      KC_PGUP,            KC_HOME,
                                                                                        KC_BSPC, OSL(_OTHER), KC_TAB,             KC_END, OSL(_FUNC), KC_SPACE
@@ -234,11 +247,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_OTHER] = LAYOUT_ergodox_pretty(
-        KC_GRV,  KC_1,               KC_2,    KC_3,    KC_4,     KC_5,    KC_6,               KC_PSCR, KC_7,    KC_8,    KC_9,    KC_0,       KC_MINS,               KC_EQL,
-        KC_DEL,  KC_EXCLAIM,               KC_W,    KC_E,    KC_R,     KC_T,    TO(_MAC),           TO(1),   KC_Y,    KC_7,    KC_8,    KC_9,       KC_P,                  KC_BSLS,
-        KC_ESC,  KC_LGUI,            _______, KC_D,    KC_F,     KC_G,                                         KC_H,    KC_4,    KC_5,    KC_6,   KC_SCLN,           KC_QUOT,
-        _______, MT(MOD_LCTL, KC_Z), KC_X,    KC_UP,    KC_DOWN, KC_B,    _______,            KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        _______, KC_F4,              KC_F5,   KC_LEFT, KC_RIGHT,                                                                KC_0,    KC_0,    KC_DOT, TO(_MAC),          KC_RGUI,
+        KC_GRV,  KC_1,               KC_2,    KC_3,      KC_4,       KC_5,    KC_6,               KC_PSCR, KC_7,    KC_8,    KC_9,    KC_0,       KC_MINS,               KC_EQL,
+        KC_DEL,  KC_EXCLAIM,         KC_W,    KC_E,      KC_R,       KC_T,    TO(_MAC),           TO(1),   KC_Y,    KC_7,    KC_8,    KC_9,       KC_P,                  KC_BSLS,
+        KC_ESC,  KC_LGUI,            _______, KC_D,      KC_F,       KC_G,                                         KC_H,    KC_4,    KC_5,    KC_6,   KC_SCLN,           KC_QUOT,
+        _______, MT(MOD_LCTL, KC_Z), CTRL_CUT,CTRL_COPY, CTRL_PASTE, KC_B,    _______,            KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
+        _______, KC_F4,              KC_F5,   KC_LEFT,   KC_RIGHT,                                                                  KC_0,    KC_0,    KC_DOT, TO(_MAC),          KC_RGUI,
                                                                                      KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                   KC_PGUP,            KC_PGDN,
                                                                         KC_BSPC, KC_ENT, _______,             KC_RCTL, KC_ENT, _______
