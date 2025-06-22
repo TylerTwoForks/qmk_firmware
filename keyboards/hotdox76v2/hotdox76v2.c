@@ -98,6 +98,9 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
     }
 }
 
+
+enum layers { _MAC, _LINUX, _HDP, _FUNC, _OTHER, };
+
 void render_logo(void) {
     uint8_t i = 0, j = 0;
     for (i = 0; i < 4; ++i) {
@@ -111,41 +114,64 @@ void render_logo(void) {
     }
 }
 
+
+#define MAX_LAYER_CHARS 7  // Longest string: "5:Other" (7 chars)
+#define FONT_WIDTH 12      // Each glyph is 12px wide
+#define MAX_TEXT_WIDTH (MAX_LAYER_CHARS * FONT_WIDTH)
+
 void render_layer_helper_fun(uint8_t start_line, const char *data, uint8_t gap_w, uint8_t l) {
     uint8_t j = 0, k = 0;
-    for (j = 0; j < l; ++j) {      // font index
-        for (k = 0; k < 12; ++k) { // font byte index
-            //                                        base + logo_w(32) + gap_w(12) +l*font_w(12)+current_byte_index
-            oled_write_raw_byte(pgm_read_byte(&ext_big_font[pgm_read_byte(&data[j]) - 0x20][k]), start_line * 2 * 128 + 32 + gap_w + j * 12 + k);
-            oled_write_raw_byte(pgm_read_byte(&ext_big_font[pgm_read_byte(&data[j]) - 0x20][k + 12]), start_line * 2 * 128 + 128 + 32 + gap_w + j * 12 + k);
+
+    // Clear entire text area first
+    for (k = 0; k < MAX_TEXT_WIDTH; ++k) {
+        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 32 + gap_w + k);
+        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 128 + 32 + gap_w + k);
+    }
+
+    // Now render the actual text
+    for (j = 0; j < l; ++j) {
+        for (k = 0; k < 12; ++k) {
+            oled_write_raw_byte(
+                pgm_read_byte(&ext_big_font[pgm_read_byte(&data[j]) - 0x20][k]),
+                start_line * 2 * 128 + 32 + gap_w + j * 12 + k
+            );
+            oled_write_raw_byte(
+                pgm_read_byte(&ext_big_font[pgm_read_byte(&data[j]) - 0x20][k + 12]),
+                start_line * 2 * 128 + 128 + 32 + gap_w + j * 12 + k
+            );
         }
     }
-    for (j = 0; j < gap_w; ++j) {
-        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 32 + j);
-        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 32 + gap_w + l * 12 + j);
-
-        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 128 + 32 + j);
-        oled_write_raw_byte(pgm_read_byte(&blank_block), start_line * 2 * 128 + 128 + 32 + gap_w + l * 12 + j);
-    }
 }
+
 void render_layer(uint8_t layer) {
-    // render_layer_helper_fun(0, PSTR("LAYER:"), 12, 6);
+    const char *text;
+    uint8_t gap;
+
     switch (layer) {
         case 0:
-            render_layer_helper_fun(1, PSTR("1:Mac"), 12, strlen_P(PSTR("1:Mac")));
+            text = PSTR("1:Mac");
+            gap = 18;
             break;
         case 1:
-            render_layer_helper_fun(1, PSTR("2:Linux"), 12, strlen_P(STR("2:Linux")));
+            text = PSTR("2:Linux");
+            gap = 12;
             break;
         case 2:
-            render_layer_helper_fun(1, PSTR("3:Func"), 0, strlen_P(PSTR("3:Func")));
+            text = PSTR("3:HDP");
+            gap = 15;
             break;
         case 3:
-        default:
-            render_layer_helper_fun(1, PSTR("4:Other"), 0,strlen_P(PSTR("4:Other")));
+            text = PSTR("4:Func");
+            gap = 15;
             break;
+        default:
+            text = PSTR("5:Oth");
+            gap = 10;
     }
+
+    render_layer_helper_fun(1, text, gap, strlen_P(text));
 }
+
 
 void render_cur_input_helper_fun(uint8_t start_line, const char *data, uint8_t gap_w, uint8_t l) {
     uint8_t j = 0, k = 0;
@@ -185,10 +211,11 @@ bool oled_task_kb(void) {
     if (is_keyboard_master()) {
         render_cur_input();
     }else {
-        render_layer(biton32(layer_state));
+        // render_layer(biton32(layer_state));
+        render_layer(get_highest_layer(layer_state));
     }
    
-    return false;
+    return true;
 }
 
 static const char PROGMEM code_to_name[0xFF] = {

@@ -5,7 +5,12 @@
 #include QMK_KEYBOARD_H
 #include "host.h"
 
-enum layers { _MAC, _LINUX, _FUNC, _OTHER, _HDP };
+
+enum layers { _MAC, _LINUX, _HDP, _FUNC, _OTHER, };
+
+/* enum keycodes {
+    KC_CYCLE_LAYERS = QK_USER,
+}; */
 
 enum custom_keycodes {
     CTRL_COPY = SAFE_RANGE,
@@ -13,7 +18,8 @@ enum custom_keycodes {
     CTRL_CUT,
     MAC_END,
     MAC_HOME,
-    SPACE_CANCEL_CAPS
+    SPACE_CANCEL_CAPS,
+    KC_CYCLE_LAYERS
 };
 
 enum combos{
@@ -29,6 +35,27 @@ enum combos{
     RSHIFTHD,
 };
 
+// 1st layer on the cycle
+#define LAYER_CYCLE_START 0
+// Last layer on the cycle
+#define LAYER_CYCLE_END 4
+
+bool cycle_layer(void) {
+    uint8_t current_layer = get_highest_layer(layer_state);
+
+    // Check if we are within the range, if not quit
+    if (current_layer > LAYER_CYCLE_END || current_layer < LAYER_CYCLE_START) {
+        return false;
+    }
+
+    uint8_t next_layer = current_layer + 1;
+    if (next_layer > LAYER_CYCLE_END) {
+        next_layer = LAYER_CYCLE_START;
+    }
+    layer_move(next_layer);
+    return false;
+}
+
 const uint16_t PROGMEM lsft_combo[] = {KC_F, KC_D, COMBO_END};
 const uint16_t PROGMEM rsft_combo[] = {KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM renter_combo[] = {KC_J, KC_K, RCTL_T(KC_L), COMBO_END};
@@ -38,7 +65,7 @@ const uint16_t PROGMEM lenter_combo_mac[] = {LGUI_T(KC_S), KC_D, KC_F, COMBO_END
 const uint16_t PROGMEM renter_combo_mac[] = {KC_J, KC_K, RGUI_T(KC_L), COMBO_END};
 
 const uint16_t PROGMEM lenter_combo_hd[] = {LCTL_MT_N, KC_T, KC_H, COMBO_END};
-const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, RCTL_MT_I, COMBO_END};
 const uint16_t PROGMEM lsft_combo_hd[] = {KC_T, KC_H, COMBO_END};
 const uint16_t PROGMEM rsft_combo_hd[] = {KC_A, KC_E, COMBO_END};
 
@@ -103,6 +130,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uint8_t copy_mod = keymap_config.swap_lctl_lgui ? KC_LEFT_GUI : KC_LEFT_CTRL;
 
     switch (keycode) {
+        case KC_CYCLE_LAYERS:
+            if (!record->event.pressed) {
+                // We've already handled the keycode (doing nothing), let QMK know so no further code is run unnecessarily
+                return false;
+            };
+            cycle_layer();
+
         case KC_SPACE:
             if (!record->event.pressed) { // using the ! indicates "on key up" while removing it indicates "on key down"
                 if (host_keyboard_led_state().caps_lock) {
@@ -232,6 +266,8 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
     }
 };
 
+
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //KeymapCEditor - keymap.c viewer and editor - I use this extension to view the keymaps in a more ui friendly way for quick mental parsing.  
     [_MAC] = LAYOUT_ergodox_pretty(
@@ -239,10 +275,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_DEL,        KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
         KC_ESC,        KC_A,               LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                          KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
         KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z), KC_X,           KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,       KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        TO(_HDP),      TO(_LINUX),           TO(_LINUX),
+        KC_CAPS,       KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        TO(_HDP),      KC_CYCLE_LAYERS,           TO(_LINUX),
                                                                                                         KC_LALT, KC_LGUI,             KC_RALT, KC_A,
-                                                                                                                 KC_PGUP,             MAC_HOME,
-                                                                                           KC_BSPC, OSL(_OTHER), KC_TAB,              MAC_END, OSL(_FUNC), KC_SPACE
+                                                                                                                 KC_PGUP,                 MAC_HOME,
+                                                                                           KC_BSPC, OSL(_OTHER), KC_TAB,          MAC_END, OSL(_FUNC), KC_SPACE
     ),
 
     [_LINUX] = LAYOUT_ergodox_pretty(
@@ -250,18 +286,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_DEL,        KC_Q,              KC_W,         KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET,  KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
         KC_ESC,        LGUI_MT_A,         LCTL_T(KC_S), KC_D,         KC_F,          KC_G,                                                   KC_H,    KC_J,         KC_K,         RCTL_T(KC_L), KC_SCLN,           KC_QUOT,
         KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z),KC_X,         KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,       KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_HDP),    TO(_FUNC),       TO(_MAC),
+        KC_CAPS,       KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_HDP),    KC_CYCLE_LAYERS,       TO(_MAC),
                                                                                                         KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                                      KC_PGUP,            KC_HOME,
                                                                                        KC_BSPC, OSL(_OTHER), KC_TAB,             KC_END, OSL(_FUNC), KC_SPACE
     ),
+
+    [_HDP] = LAYOUT_ergodox_pretty(
+        _______, KC_1,       KC_2,       KC_3,     KC_4,   KC_5,  KC_6,                   KC_PSCR,          KC_7,               KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
+        _______, KC_F,       KC_P,       KC_D,     KC_L,   KC_X,  KC_LEFT_BRACKET,        KC_RIGHT_BRACKET, RALT_T(KC_SCLN),    KC_U,         KC_O,         KC_Y,             KC_B,                  KC_Z,
+        _______, LGUI_MT_S,  LCTL_MT_N,  KC_T,     KC_H,   KC_K,                                                    KC_COMM,            KC_A,         KC_E,         RCTL_MT_I,    KC_C,              KC_Q, 
+        _______, KC_V,       KC_W,       KC_G,     KC_M,   KC_J,  _______,                _______,          KC_MINS,            KC_DOT,       KC_QUOT,      KC_EQL,           KC_SLASH,              KC_EQL, 
+        _______, _______,    _______,    _______,  KC_R,                                                                                        _______,      _______,      _______,      KC_CYCLE_LAYERS,           _______, 
+                                                                                 KC_LALT, KC_LGUI,            KC_TRNS, KC_TRNS, 
+                                                                                              KC_TRNS,            KC_TRNS, 
+                                                                KC_BSPC, OSL(_OTHER), KC_TRNS,            KC_TRNS, KC_TRNS, KC_TRNS
+    ),   
 
     [_FUNC] = LAYOUT_ergodox_pretty(
         KC_GRV,  KC_F1,              KC_F2,   KC_F3,   KC_F4,    KC_F5,   KC_F6,               KC_PSCR, KC_F7,   KC_F8,   KC_F9,   KC_F10,      KC_F11,                  KC_F12,
         KC_DEL,  KC_Q,               KC_W,    KC_E,    KC_R,     KC_T,    TO(_OTHER),          TO(1),   KC_Y,    KC_U,    KC_LBRC, KC_RBRC,     KC_P,                    KC_BSLS,
         KC_ESC,  KC_A,               KC_S,    KC_D,    KC_F,     KC_G,                                          KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,KC_SCLN,             KC_QUOT,
         _______, MT(MOD_LCTL, KC_Z), KC_X,    KC_C,    KC_V,     KC_B,    _______,             KC_N,    KC_N,    KC_M,    KC_COMM, KC_DOT,      MT(MOD_RCTL, KC_SLSH),   KC_RSFT,
-        _______, KC_F4,              KC_F5,   KC_LEFT, KC_RIGHT,                                                                 KC_DOWN, KC_UP,   KC_LBRC, TO(_OTHER),             KC_RGUI,
+        _______, KC_F4,              KC_F5,   KC_LEFT, KC_RIGHT,                                                                 KC_DOWN, KC_UP,   KC_LBRC, KC_CYCLE_LAYERS,             KC_RGUI,
                                                                                      KC_LALT, KC_LGUI,             KC_RALT, KC_A,
                                                                                                   KC_PGUP,             KC_PGDN,
                                                                         KC_SPACE, KC_ENT, _______,           KC_RCTL, _______, _______
@@ -272,20 +319,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_DEL,  KC_EXCLAIM,         KC_W,    KC_E,      KC_R,       KC_T,    TO(_MAC),           TO(1),   KC_Y,    KC_7,    KC_8,    KC_9,       KC_P,                  KC_BSLS,
         KC_ESC,  KC_LGUI,            _______, KC_D,      KC_F,       KC_G,                                         KC_H,    KC_4,    KC_5,    KC_6,   KC_SCLN,           KC_QUOT,
         _______, MT(MOD_LCTL, KC_Z), CTRL_CUT,CTRL_COPY, CTRL_PASTE, KC_B,    _______,            KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        _______, KC_F4,              KC_F5,   KC_LEFT,   KC_RIGHT,                                                                  KC_0,    KC_0,    KC_DOT, TO(_MAC),          KC_RGUI,
+        _______, KC_F4,              KC_F5,   KC_LEFT,   KC_RIGHT,                                                                  KC_0,    KC_0,    KC_DOT, KC_CYCLE_LAYERS,          KC_RGUI,
                                                                                      KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                               KC_PGUP,            KC_PGDN,
                                                                              KC_BSPC, KC_ENT, _______,             KC_RCTL, KC_ENT, _______
     ),
 
-    [_HDP] = LAYOUT_ergodox_pretty(
-        _______, KC_1,       KC_2,       KC_3,     KC_4,   KC_5,  KC_6,                   KC_PSCR,          KC_7,               KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
-        _______, KC_F,       KC_P,       KC_D,     KC_L,   KC_X,  KC_LEFT_BRACKET,        KC_RIGHT_BRACKET, RALT_T(KC_SCLN),    KC_U,         KC_O,         KC_Y,             KC_B,                  KC_Z,
-        _______, LGUI_MT_S,  LCTL_MT_N,  KC_T,     KC_H,   KC_K,                                                    KC_COMM,            KC_A,         KC_E,         KC_I,         RCTL_MT_C,         KC_Q, 
-        _______, KC_V,       KC_W,       KC_G,     KC_M,   KC_J,  _______,                _______,          KC_MINS,            KC_DOT,       KC_QUOT,      KC_EQL,           KC_SLASH,              KC_EQL, 
-        _______, _______,    _______,    _______,  KC_R,                                                                                        _______,      _______,      _______,      _______,           _______, 
-                                                                                 KC_LALT, KC_LGUI,            _______, _______, 
-                                                                                              _______,            _______, 
-                                                                     KC_BSPC, KC_ENT, _______,            _______, _______, _______
-    ),
+    
 };

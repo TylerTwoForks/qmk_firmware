@@ -13,6 +13,8 @@
 #define QUICK_TAP_TERM 0
 #define PERMISSIVE_HOLD
 
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_OLED_ENABLE
 
 #define MASTER_RIGHT
 #define RGBLIGHT_SLEEP
@@ -23,4 +25,4 @@
 #define LGUI_MT_S LGUI_T(KC_S)
 
 #define LCTL_MT_N LCTL_T(KC_N)
-#define RCTL_MT_C LCTL_T(KC_C)
+#define RCTL_MT_I RCTL_T(KC_I)
