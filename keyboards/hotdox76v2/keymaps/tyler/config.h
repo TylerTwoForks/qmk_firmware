@@ -19,3 +19,8 @@
 
 #define LGUI_MT_A LGUI_T(KC_A)
 #define LALT_MT_A LALT_T(KC_A) 
+
+#define LGUI_MT_S LGUI_T(KC_S)
+
+#define LCTL_MT_N LCTL_T(KC_N)
+#define RCTL_MT_C LCTL_T(KC_C)

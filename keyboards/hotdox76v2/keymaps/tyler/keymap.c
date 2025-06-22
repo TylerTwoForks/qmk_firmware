@@ -5,7 +5,7 @@
 #include QMK_KEYBOARD_H
 #include "host.h"
 
-enum layers { _MAC, _LINUX, _FUNC, _OTHER };
+enum layers { _MAC, _LINUX, _FUNC, _OTHER, _HDP };
 
 enum custom_keycodes {
     CTRL_COPY = SAFE_RANGE,
@@ -22,15 +22,26 @@ enum combos{
     LENTER,
     RENTER,
     RENTERM,
-    LENTERM
+    LENTERM,
+    LENTERHD,
+    RENTERHD,
+    LSHIFTHD,
+    RSHIFTHD,
 };
 
 const uint16_t PROGMEM lsft_combo[] = {KC_F, KC_D, COMBO_END};
 const uint16_t PROGMEM rsft_combo[] = {KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM renter_combo[] = {KC_J, KC_K, RCTL_T(KC_L), COMBO_END};
-const uint16_t PROGMEM renter_combo_mac[] = {KC_J, KC_K, RGUI_T(KC_L), COMBO_END};
 const uint16_t PROGMEM lenter_combo[] = {LCTL_T(KC_S), KC_D, KC_F, COMBO_END};
+
 const uint16_t PROGMEM lenter_combo_mac[] = {LGUI_T(KC_S), KC_D, KC_F, COMBO_END};
+const uint16_t PROGMEM renter_combo_mac[] = {KC_J, KC_K, RGUI_T(KC_L), COMBO_END};
+
+const uint16_t PROGMEM lenter_combo_hd[] = {LCTL_MT_N, KC_T, KC_H, COMBO_END};
+const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM lsft_combo_hd[] = {KC_T, KC_H, COMBO_END};
+const uint16_t PROGMEM rsft_combo_hd[] = {KC_A, KC_E, COMBO_END};
+
 combo_t key_combos[] = {
     [OS_LSFT] = COMBO_ACTION(lsft_combo),
     [OS_RSFT] = COMBO_ACTION(rsft_combo),
@@ -38,6 +49,11 @@ combo_t key_combos[] = {
     [RENTER] = COMBO_ACTION(renter_combo),
     [LENTERM] = COMBO_ACTION(lenter_combo_mac),
     [RENTERM] = COMBO_ACTION(renter_combo_mac),
+    [LENTERHD] = COMBO_ACTION(lenter_combo_hd),
+    [RENTERHD] = COMBO_ACTION(renter_combo_hd),
+    [RENTERHD] = COMBO_ACTION(renter_combo_hd),
+    [LSHIFTHD] = COMBO_ACTION(lsft_combo_hd),
+    [RSHIFTHD] = COMBO_ACTION(rsft_combo_hd),
 };
 
 bool combo_held = false;
@@ -45,6 +61,7 @@ static uint16_t combo_timer;
 void process_combo_event(uint16_t combo_index, bool pressed) {
     switch(combo_index) {
         case OS_LSFT:
+        case LSHIFTHD:
             if (pressed) {
                 combo_timer = timer_read();
                 register_mods(MOD_BIT(KC_LSFT));  // Hold starts now
@@ -57,6 +74,7 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
             }
             break;
         case OS_RSFT:
+        case RSHIFTHD:
             if (pressed) {
                 combo_timer = timer_read();
                 register_mods(MOD_BIT(KC_RSFT));  // Hold starts now
@@ -71,7 +89,8 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
         case LENTERM:
         case RENTERM:
         case LENTER:
-        case RENTER:
+        case RENTERHD:
+        case LENTERHD:
             if (pressed) {
                 tap_code(KC_ENTER);
                 combo_held = true;
@@ -202,6 +221,8 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
     switch (keycode) {
         case LGUI_MT_A:
         case LALT_MT_A: 
+        case LGUI_MT_S:
+        case LCTL_MT_N:
             return 320;
         /* case CTRL_COPY:
         case CTRL_PASTE:
@@ -218,7 +239,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_DEL,        KC_Q,               KC_W,           KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET, KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
         KC_ESC,        KC_A,               LGUI_T(KC_S),   KC_D,         KC_F,          KC_G,                                          KC_H,    KC_J,         KC_K,         RGUI_T(KC_L), RALT_T(KC_SCLN),   KC_QUOT,
         KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z), KC_X,           KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,             KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,       KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        KC_LBRC,      TO(_LINUX),           TO(_LINUX),
+        KC_CAPS,       KC_F4,              KC_F5,          KC_LEFT,      KC_RIGHT,                                                                              KC_DOWN,      KC_UP,        TO(_HDP),      TO(_LINUX),           TO(_LINUX),
                                                                                                         KC_LALT, KC_LGUI,             KC_RALT, KC_A,
                                                                                                                  KC_PGUP,             MAC_HOME,
                                                                                            KC_BSPC, OSL(_OTHER), KC_TAB,              MAC_END, OSL(_FUNC), KC_SPACE
@@ -229,7 +250,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_DEL,        KC_Q,              KC_W,         KC_E,         KC_R,          KC_T,    KC_LEFT_BRACKET,    KC_RIGHT_BRACKET,  KC_Y,    KC_U,         KC_I,         KC_O,             KC_P,                  KC_BSLS,
         KC_ESC,        LGUI_MT_A,         LCTL_T(KC_S), KC_D,         KC_F,          KC_G,                                                   KC_H,    KC_J,         KC_K,         RCTL_T(KC_L), KC_SCLN,           KC_QUOT,
         KC_LEFT_SHIFT, MT(MOD_LCTL, KC_Z),KC_X,         KC_C,         KC_V,          KC_B,    OSL(_FUNC),         KC_N,              KC_N,    KC_M,         KC_COMM,      KC_DOT,           MT(MOD_RCTL, KC_SLSH), KC_RSFT,
-        KC_CAPS,       KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_FUNC),    TO(_FUNC),       TO(_MAC),
+        KC_CAPS,       KC_F4,             KC_F5,        KC_LEFT,      KC_RIGHT,                                                                               KC_DOWN,      KC_UP,        TO(_HDP),    TO(_FUNC),       TO(_MAC),
                                                                                                         KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                                      KC_PGUP,            KC_HOME,
                                                                                        KC_BSPC, OSL(_OTHER), KC_TAB,             KC_END, OSL(_FUNC), KC_SPACE
@@ -238,12 +259,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_FUNC] = LAYOUT_ergodox_pretty(
         KC_GRV,  KC_F1,              KC_F2,   KC_F3,   KC_F4,    KC_F5,   KC_F6,               KC_PSCR, KC_F7,   KC_F8,   KC_F9,   KC_F10,      KC_F11,                  KC_F12,
         KC_DEL,  KC_Q,               KC_W,    KC_E,    KC_R,     KC_T,    TO(_OTHER),          TO(1),   KC_Y,    KC_U,    KC_LBRC, KC_RBRC,     KC_P,                    KC_BSLS,
-        KC_ESC,  KC_LGUI,            _______, KC_D,    KC_F,     KC_G,                                          KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,KC_SCLN,             KC_QUOT,
+        KC_ESC,  KC_A,               KC_S,    KC_D,    KC_F,     KC_G,                                          KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,KC_SCLN,             KC_QUOT,
         _______, MT(MOD_LCTL, KC_Z), KC_X,    KC_C,    KC_V,     KC_B,    _______,             KC_N,    KC_N,    KC_M,    KC_COMM, KC_DOT,      MT(MOD_RCTL, KC_SLSH),   KC_RSFT,
         _______, KC_F4,              KC_F5,   KC_LEFT, KC_RIGHT,                                                                 KC_DOWN, KC_UP,   KC_LBRC, TO(_OTHER),             KC_RGUI,
                                                                                      KC_LALT, KC_LGUI,             KC_RALT, KC_A,
                                                                                                   KC_PGUP,             KC_PGDN,
-                                                                        KC_BSPC, KC_ENT, _______,           KC_RCTL, _______, _______
+                                                                        KC_SPACE, KC_ENT, _______,           KC_RCTL, _______, _______
     ),
 
     [_OTHER] = LAYOUT_ergodox_pretty(
@@ -253,7 +274,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, MT(MOD_LCTL, KC_Z), CTRL_CUT,CTRL_COPY, CTRL_PASTE, KC_B,    _______,            KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
         _______, KC_F4,              KC_F5,   KC_LEFT,   KC_RIGHT,                                                                  KC_0,    KC_0,    KC_DOT, TO(_MAC),          KC_RGUI,
                                                                                      KC_LALT, KC_LGUI,            KC_RALT, KC_A,
-                                                                                                  KC_PGUP,            KC_PGDN,
-                                                                        KC_BSPC, KC_ENT, _______,             KC_RCTL, KC_ENT, _______
+                                                                                              KC_PGUP,            KC_PGDN,
+                                                                             KC_BSPC, KC_ENT, _______,             KC_RCTL, KC_ENT, _______
+    ),
+
+    [_HDP] = LAYOUT_ergodox_pretty(
+        _______, KC_1,       KC_2,       KC_3,     KC_4,   KC_5,  KC_6,                   KC_PSCR,          KC_7,               KC_8,         KC_9,         KC_0,             KC_MINS,               KC_EQL,
+        _______, KC_F,       KC_P,       KC_D,     KC_L,   KC_X,  KC_LEFT_BRACKET,        KC_RIGHT_BRACKET, RALT_T(KC_SCLN),    KC_U,         KC_O,         KC_Y,             KC_B,                  KC_Z,
+        _______, LGUI_MT_S,  LCTL_MT_N,  KC_T,     KC_H,   KC_K,                                                    KC_COMM,            KC_A,         KC_E,         KC_I,         RCTL_MT_C,         KC_Q, 
+        _______, KC_V,       KC_W,       KC_G,     KC_M,   KC_J,  _______,                _______,          KC_MINS,            KC_DOT,       KC_QUOT,      KC_EQL,           KC_SLASH,              KC_EQL, 
+        _______, _______,    _______,    _______,  KC_R,                                                                                        _______,      _______,      _______,      _______,           _______, 
+                                                                                 KC_LALT, KC_LGUI,            _______, _______, 
+                                                                                              _______,            _______, 
+                                                                     KC_BSPC, KC_ENT, _______,            _______, _______, _______
     ),
 };
