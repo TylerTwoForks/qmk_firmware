@@ -99,7 +99,7 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
 }
 
 
-enum layers { _MAC, _LINUX, _HDP, _FUNC, _OTHER, };
+enum layers { _HDP, _FUNC, _OTHER, };
 
 void render_logo(void) {
     uint8_t i = 0, j = 0;
@@ -149,23 +149,15 @@ void render_layer(uint8_t layer) {
 
     switch (layer) {
         case 0:
-            text = PSTR("1:Mac");
-            gap = 18;
-            break;
-        case 1:
-            text = PSTR("2:Linux");
-            gap = 12;
-            break;
-        case 2:
-            text = PSTR("3:HDP");
+            text = PSTR("HDP");
             gap = 15;
             break;
-        case 3:
-            text = PSTR("4:Func");
+        case 1:
+            text = PSTR("Func");
             gap = 15;
             break;
         default:
-            text = PSTR("5:Oth");
+            text = PSTR("Oth");
             gap = 10;
     }
 

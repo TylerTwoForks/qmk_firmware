@@ -19,8 +19,6 @@
 #define MASTER_RIGHT
 #define RGBLIGHT_SLEEP
 
-#define LGUI_MT_A LGUI_T(KC_A)
-#define LALT_MT_A LALT_T(KC_A) 
 
 #define LGUI_MT_S LGUI_T(KC_S)
 
