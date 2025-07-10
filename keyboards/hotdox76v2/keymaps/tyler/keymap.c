@@ -44,11 +44,11 @@ bool cycle_layer(void) {
         return false;
     }
 
-    uint8_t next_layer = current_layer + 1;
+    uint8_t next_layer = current_yer + 1;
     if (next_layer > LAYER_CYCLE_END) {
         next_layer = LAYER_CYCLE_START;
     }
-    layer_move(next_layer);
+    layer_movela(next_layer);
     return false;
 }
 
@@ -261,9 +261,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //symbols/other/numpad
     [_OTHER] = LAYOUT_ergodox_pretty(
         KC_GRV,  KC_1,               KC_2,    KC_3,      KC_4,       KC_5,    KC_6,               KC_PSCR, KC_7,    KC_8,    KC_9,    KC_0,       KC_MINS,               KC_EQL,
-        KC_DEL,  KC_EXCLAIM,         KC_W,    KC_E,      KC_R,       KC_T,    _______,           TO(1),   KC_Y,    KC_7,    KC_8,    KC_9,       KC_P,                  KC_BSLS,
+        KC_DEL,  KC_EXCLAIM,         KC_W,    KC_E,      KC_R,       KC_T,    _______,           TO(1),    KC_Y,    KC_7,    KC_8,    KC_9,       KC_P,                  KC_BSLS,
         KC_ESC,  KC_LGUI,            _______, KC_D,      KC_F,       KC_G,                                         KC_H,    KC_4,    KC_5,    KC_6,   KC_SCLN,           KC_QUOT,
-        _______, UNDO_OS_AWARE, CUT_OS_AWARE,COPY_OS_AWARE, PASTE_OS_AWARE, FIND_OS_AWARE,    _______,            KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
+        _______, UNDO_OS_AWARE, CUT_OS_AWARE,COPY_OS_AWARE, PASTE_OS_AWARE, FIND_OS_AWARE,    _______,         KC_N,    KC_N,    KC_1,    KC_2,    KC_3,       MT(MOD_RCTL, KC_SLSH), KC_RSFT,
         _______, KC_F4,              KC_F5,   KC_LEFT,   KC_RIGHT,                                                                  KC_0,    KC_0,    KC_DOT, KC_CYCLE_LAYERS,          TO(_HDP),
                                                                                          KC_LALT, KC_LGUI,            KC_RALT, KC_A,
                                                                                                   KC_PGUP,                KC_PGDN,
