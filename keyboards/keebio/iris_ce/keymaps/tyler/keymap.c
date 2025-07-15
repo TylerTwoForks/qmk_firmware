@@ -4,6 +4,10 @@
 #include QMK_KEYBOARD_H
 #include "config.h"
 
+#if defined(OS_DETECTION_ENABLE)
+    #include "os_detection.h"
+#endif
+
 enum custom_layers {
      _HDP,
      _LOWER,
@@ -17,6 +21,8 @@ enum custom_keycodes {
     CUT_OS_AWARE,
     FIND_OS_AWARE,
     UNDO_OS_AWARE,
+    HOME_OS_AWARE,
+    END_OS_AWARE,
     MAC_END,
     MAC_HOME,
     SPACE_CANCEL_CAPS,
@@ -42,11 +48,11 @@ bool cycle_layer(void) {
         return false;
     }
 
-    uint8_t next_layer = current_yer + 1;
+    uint8_t next_layer = current_layer + 1;
     if (next_layer > LAYER_CYCLE_END) {
         next_layer = LAYER_CYCLE_START;
     }
-    layer_movela(next_layer);
+    layer_move(next_layer);
     return false;
 }
 
@@ -131,6 +137,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     #endif
 
     switch (keycode) {
+        case END_OS_AWARE:
+            if (record->event.pressed){
+                #if defined (OS_DETECTION_ENABLED)
+                    if(host == OS_MACOS){
+                        SEND_STRING(KEY_APPLE_KEY_ACTION(X_RIGHT));
+                    }else{
+                        tap_code(KC_END)
+                    }
+                #endif
+            }
+        case HOME_OS_AWARE:
+            if (record->event.pressed){
+                #if defined (OS_DETECTION_ENABLED)
+                    if(host == OS_MACOS){
+                        SEND_STRING(KEY_APPLE_KEY_ACTION(X_LEFT));
+                    }else{
+                        tap_code(KC_HOME)
+                    }
+                #endif
+            }
         case COPY_OS_AWARE:
             if (record->event.pressed){
                 #if defined(OS_DETECTION_ENABLE)
@@ -218,7 +244,7 @@ void keyboard_post_init_user(void) {
     // Set RGB to solid white at full brightness
     rgblight_enable_noeeprom();
     rgblight_mode_noeeprom(1);
-    rgblight_sethsv_noeeprom(0, 0, 255); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
+    rgblight_sethsv_noeeprom(0, 0, 100); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
 };
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
@@ -237,29 +263,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_HDP] = LAYOUT(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-     KC_GRV, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
+     KC_GRV, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_CAPS,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_DEL,  KC_F,    KC_P,    KC_D,    KC_L,    KC_X,                               KC_SCLN, KC_U,    KC_O,    KC_Y,    KC_B,    KC_Z,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ESC,  KC_S,    KC_N,    KC_T,    KC_H,    KC_K,                               KC_COMM, KC_A,    KC_E,    KC_I,    KC_C,    KC_Q,
+     KC_ESC,  LGUI_MT_S,LCTL_MT_N, KC_T, KC_H,    KC_K,                               KC_COMM, KC_A,    KC_E,    RCTL_MT_I, KC_C,  KC_Q,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_BSLS, KC_V,    KC_W,    KC_G,    KC_M,    KC_J,    KC_TAB,           KC_RALT, KC_MINS, KC_DOT,  KC_QUOT, KC_EQL,  KC_SLSH, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    OSL(_LOWER), KC_R, KC_BSPC,                  KC_SPC,  OSL(_RAISE), KC_Z
+                                    OSL(_LOWER),KC_R, KC_BSPC,                   KC_SPC,  KC_Z,    OSL(_RAISE)
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
   [_LOWER] = LAYOUT(//symbol - other - num pad
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-     KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_PGUP,
+     KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_PSCR, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_PGUP,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_DEL,  _______, _______, _______, KC_LBRC, KC_RBRC,                            _______, KC_P7,   KC_P8,   KC_P9,   KC_P0,   KC_PGDN,
+     KC_DEL,  _______, _______, KC_LBRC, KC_RBRC, _______,                            _______, KC_7,    KC_8,    KC_9,    KC_P0,   KC_PGDN,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ESC,  _______, _______, _______, KC_LPRN, KC_RPRN,                            KC_RBRC, KC_P4,   KC_P5,   KC_P6,   KC_PLUS, KC_PIPE,
+     KC_ESC,  _______, _______, KC_LPRN, KC_RPRN, _______,                            HOSA,    KC_4,    KC_5,    KC_6,    KC_PLUS, KC_PIPE,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          KC_RPRN, KC_RCBR, KC_P1,   KC_P2,   KC_P3,   KC_MINS, CYCL,
+     KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          HOSA,    EOSA,    KC_1,    KC_2,    KC_3,    KC_MINS, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    KC_F5,   _______, KC_DEL,                    TO(_HDP),  _______, KC_P0
+                                    KC_F5,   KC_LGUI, KC_DEL,                    TO(_HDP),  KC_0,  _______
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -269,11 +295,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      RM_TOGG, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, QK_BOOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     RM_NEXT, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_EQL,  KC_HOME, RM_HUEU, RM_SATU, RM_VALU, KC_BSLS,
+     RM_NEXT, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT, RM_VALU, KC_BSLS,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_LCTL,          _______, KC_PLUS, KC_END,  RM_HUED, RM_SATD, RM_VALD, CYCL,
+     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_LCTL,          HOSA,    EOSA,    KC_END,  RM_HUED, RM_SATD, RM_VALD, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, _______, KC_SPACE,                   TO(_HDP), _______, _______
+                                    _______, _______, KC_SPACE,                  TO(_HDP), _______, _______
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   )
 };

@@ -44,11 +44,11 @@ bool cycle_layer(void) {
         return false;
     }
 
-    uint8_t next_layer = current_yer + 1;
+    uint8_t next_layer = current_layer + 1;
     if (next_layer > LAYER_CYCLE_END) {
         next_layer = LAYER_CYCLE_START;
     }
-    layer_movela(next_layer);
+    layer_move(next_layer);
     return false;
 }
 
@@ -198,6 +198,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 #endif
             } 
             break;
+        
         case KC_CYCLE_LAYERS:
             if (!record->event.pressed) {
                 // We've already handled the keycode (doing nothing), let QMK know so no further code is run unnecessarily
