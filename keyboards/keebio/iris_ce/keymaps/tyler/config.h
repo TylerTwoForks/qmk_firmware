@@ -13,6 +13,9 @@
 #define LCTL_MT_N LCTL_T(KC_N)
 #define RCTL_MT_I RCTL_T(KC_I)
 
+#define LCTL_MT_S LCTL_T(KC_S)
+#define RCTL_MT_L RCTL_T(KC_L)
+
 #undef LOCKING_SUPPORT_ENABLE
 #undef LOCKING_RESYNC_ENABLE
 

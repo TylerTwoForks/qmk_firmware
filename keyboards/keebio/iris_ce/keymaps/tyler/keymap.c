@@ -9,7 +9,8 @@
 #endif
 
 enum custom_layers {
-     _HDP,
+    //  _HDP,
+     _QWERTY,
      _LOWER,
      _RAISE
 };
@@ -31,8 +32,12 @@ enum custom_keycodes {
 enum combos{
     LENTERHD,
     RENTERHD,
+    LENTERQ,
+    RENTERQ,
     LSHIFTHD,
     RSHIFTHD,
+    DRIGHT,
+    DLEFT
 };
 
 // 1st layer on the cycle
@@ -58,15 +63,24 @@ bool cycle_layer(void) {
 
 const uint16_t PROGMEM lenter_combo_hd[] = {LCTL_MT_N, KC_T, KC_H, COMBO_END};
 const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, RCTL_MT_I, COMBO_END};
+
+const uint16_t PROGMEM lenter_combo_qwerty[] = {LCTL_MT_S, KC_D, KC_F, COMBO_END};
+const uint16_t PROGMEM renter_combo_qwerty[] = {KC_J, KC_K, RCTL_MT_L, COMBO_END};
+
 const uint16_t PROGMEM lsft_combo_hd[] = {KC_T, KC_H, COMBO_END};
 const uint16_t PROGMEM rsft_combo_hd[] = {KC_A, KC_E, COMBO_END};
+const uint16_t PROGMEM lin_desktop_right[] = {KC_LCTL, KC_LALT, KC_RIGHT, COMBO_END};
+const uint16_t PROGMEM lin_desktop_left[] = {KC_LCTL, KC_LALT, KC_LEFT, COMBO_END};
 
 combo_t key_combos[] = {
     [LENTERHD] = COMBO_ACTION(lenter_combo_hd),
     [RENTERHD] = COMBO_ACTION(renter_combo_hd),
-    [RENTERHD] = COMBO_ACTION(renter_combo_hd),
+    [LENTERQ] = COMBO_ACTION(lenter_combo_qwerty),
+    [RENTERQ] = COMBO_ACTION(renter_combo_qwerty),
     [LSHIFTHD] = COMBO_ACTION(lsft_combo_hd),
     [RSHIFTHD] = COMBO_ACTION(rsft_combo_hd),
+    [DRIGHT] = COMBO_ACTION(lin_desktop_right),
+    [DLEFT] = COMBO_ACTION(lin_desktop_left),
 };
 
 bool combo_held = false;
@@ -74,6 +88,7 @@ static uint16_t combo_timer;
 void process_combo_event(uint16_t combo_index, bool pressed) {
     switch(combo_index) {
         case LSHIFTHD:
+        case KC_LSFT:
             if (pressed) {
                 combo_timer = timer_read();
                 register_mods(MOD_BIT(KC_LSFT));  // Hold starts now
@@ -86,6 +101,7 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
             }
             break;
         case RSHIFTHD:
+        case KC_RSFT:
             if (pressed) {
                 combo_timer = timer_read();
                 register_mods(MOD_BIT(KC_RSFT));  // Hold starts now
@@ -99,6 +115,8 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
             break;
         case RENTERHD:
         case LENTERHD:
+        case RENTERQ:
+        case LENTERQ:
             if (pressed) {
                 tap_code(KC_ENTER);
                 combo_held = true;
@@ -125,7 +143,7 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
     #define KEY_APPLE_KEY_ACTION(keycode) \
         KEY_MODIFIER_ACTION(keycode,X_LCMD)
 
-        
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // static uint16_t macro_timer;
 
@@ -168,7 +186,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         SEND_STRING(KEY_CTRL_ACTION(X_C));
                     }
                 #endif
-            } 
+            }
             break;
         case PASTE_OS_AWARE:
             if (record->event.pressed){
@@ -181,7 +199,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         SEND_STRING(KEY_CTRL_ACTION(X_V));
                     }
                 #endif
-            } 
+            }
             break;
         case CUT_OS_AWARE:
             if (record->event.pressed){
@@ -194,7 +212,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         SEND_STRING(KEY_CTRL_ACTION(X_X));
                     }
                 #endif
-            } 
+            }
             break;
          case FIND_OS_AWARE:
             if (record->event.pressed){
@@ -207,7 +225,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         SEND_STRING(KEY_CTRL_ACTION(X_F));
                     }
                 #endif
-            } 
+            }
             break;
         case UNDO_OS_AWARE:
             if (record->event.pressed){
@@ -220,7 +238,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                         SEND_STRING(KEY_CTRL_ACTION(X_Z));
                     }
                 #endif
-            } 
+            }
             break;
         case KC_CYCLE_LAYERS:
             if (!record->event.pressed) {
@@ -235,7 +253,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return true; // continue normal processing
-        
+
     }
 
     return true;
@@ -252,8 +270,8 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
         case LGUI_MT_S:
         case LCTL_MT_N:
             return 320;
-        default: 
-            return TAPPING_TERM; 
+        default:
+            return TAPPING_TERM;
     }
 };
 
@@ -261,7 +279,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-  [_HDP] = LAYOUT(
+  /* [_HDP] = LAYOUT(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
      KC_GRV, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_CAPS,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
@@ -273,19 +291,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                     OSL(_LOWER),KC_R, KC_BSPC,                   KC_SPC,  KC_Z,    OSL(_RAISE)
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+  ), */
+
+  [_QWERTY] = LAYOUT(
+  //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
+     KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                               KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     KC_DEL,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     KC_ESC,  KC_A,   LCTL_MT_S,  KC_D,    KC_F,    KC_G,                             KC_H,    KC_J,     KC_K,   RCTL_MT_L, KC_SCLN, KC_QUOT,
+  //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤:
+     KC_BSLS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_TAB,           KC_RALT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_EQUAL,
+  //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
+                                  OSL(_LOWER), KC_LSFT, KC_BSPC,                 KC_SPC,  KC_RSFT, OSL(_RAISE)
+                                // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
   [_LOWER] = LAYOUT(//symbol - other - num pad
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
      KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                            KC_PSCR, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_PGUP,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_DEL,  _______, _______, KC_LBRC, KC_RBRC, _______,                            _______, KC_7,    KC_8,    KC_9,    KC_P0,   KC_PGDN,
+     KC_DEL,  _______, _______, KC_LBRC, KC_RBRC, _______,                            KC_ENT, KC_7,    KC_8,    KC_9,    KC_P0,   KC_PGDN,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_ESC,  _______, _______, KC_LPRN, KC_RPRN, _______,                            HOSA,    KC_4,    KC_5,    KC_6,    KC_PLUS, KC_PIPE,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          HOSA,    EOSA,    KC_1,    KC_2,    KC_3,    KC_MINS, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    KC_F5,   KC_LGUI, KC_DEL,                    TO(_HDP),  KC_0,  _______
+                                    // KC_F5,   KC_LGUI, KC_DEL,                    TO(_HDP),  KC_0,  _______
+                                    KC_F5,   KC_LGUI, KC_DEL,                    TO(_QWERTY),  KC_0,  KC_HOME
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -299,7 +332,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_LCTL,          HOSA,    EOSA,    KC_END,  RM_HUED, RM_SATD, RM_VALD, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    _______, _______, KC_SPACE,                  TO(_HDP), _______, _______
+                                    // _______, _______, KC_SPACE,                  TO(_HDP), _______, KC_END
+                                    _______, _______, KC_SPACE,                TO(_QWERTY), _______, KC_END
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   )
 };
