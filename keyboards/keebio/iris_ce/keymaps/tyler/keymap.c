@@ -30,12 +30,12 @@ enum custom_keycodes {
 };
 
 enum combos{
-    LENTERHD,
-    RENTERHD,
+    // LENTERHD,
+    // RENTERHD,
     LENTERQ,
     RENTERQ,
-    LSHIFTHD,
-    RSHIFTHD,
+    // LSHIFTHD,
+    // RSHIFTHD,
     DRIGHT,
     DLEFT
 };
@@ -61,24 +61,25 @@ bool cycle_layer(void) {
     return false;
 }
 
-const uint16_t PROGMEM lenter_combo_hd[] = {LCTL_MT_N, KC_T, KC_H, COMBO_END};
-const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, RCTL_MT_I, COMBO_END};
+// const uint16_t PROGMEM lenter_combo_hd[] = {LCTL_MT_N, KC_T, KC_H, COMBO_END};
+// const uint16_t PROGMEM renter_combo_hd[] = {KC_A, KC_E, RCTL_MT_I, COMBO_END};
 
-const uint16_t PROGMEM lenter_combo_qwerty[] = {LCTL_MT_S, KC_D, KC_F, COMBO_END};
+// const uint16_t PROGMEM lenter_combo_qwerty[] = {LCTL_MT_S, KC_D, KC_F, COMBO_END};
+const uint16_t PROGMEM lenter_combo_qwerty[] = {KC_S, KC_D, KC_F, COMBO_END};
 const uint16_t PROGMEM renter_combo_qwerty[] = {KC_J, KC_K, RCTL_MT_L, COMBO_END};
 
-const uint16_t PROGMEM lsft_combo_hd[] = {KC_T, KC_H, COMBO_END};
-const uint16_t PROGMEM rsft_combo_hd[] = {KC_A, KC_E, COMBO_END};
+// const uint16_t PROGMEM lsft_combo_hd[] = {KC_T, KC_H, COMBO_END};
+// const uint16_t PROGMEM rsft_combo_hd[] = {KC_A, KC_E, COMBO_END};
 const uint16_t PROGMEM lin_desktop_right[] = {KC_LCTL, KC_LALT, KC_RIGHT, COMBO_END};
 const uint16_t PROGMEM lin_desktop_left[] = {KC_LCTL, KC_LALT, KC_LEFT, COMBO_END};
 
 combo_t key_combos[] = {
-    [LENTERHD] = COMBO_ACTION(lenter_combo_hd),
-    [RENTERHD] = COMBO_ACTION(renter_combo_hd),
+    // [LENTERHD] = COMBO_ACTION(lenter_combo_hd),
+    // [RENTERHD] = COMBO_ACTION(renter_combo_hd),
     [LENTERQ] = COMBO_ACTION(lenter_combo_qwerty),
     [RENTERQ] = COMBO_ACTION(renter_combo_qwerty),
-    [LSHIFTHD] = COMBO_ACTION(lsft_combo_hd),
-    [RSHIFTHD] = COMBO_ACTION(rsft_combo_hd),
+    // [LSHIFTHD] = COMBO_ACTION(lsft_combo_hd),
+    // [RSHIFTHD] = COMBO_ACTION(rsft_combo_hd),
     [DRIGHT] = COMBO_ACTION(lin_desktop_right),
     [DLEFT] = COMBO_ACTION(lin_desktop_left),
 };
@@ -87,7 +88,7 @@ bool combo_held = false;
 static uint16_t combo_timer;
 void process_combo_event(uint16_t combo_index, bool pressed) {
     switch(combo_index) {
-        case LSHIFTHD:
+        // case LSHIFTHD:
         case KC_LSFT:
             if (pressed) {
                 combo_timer = timer_read();
@@ -100,7 +101,7 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
                 unregister_mods(MOD_BIT(KC_LSFT));  // Always unregister after release
             }
             break;
-        case RSHIFTHD:
+        // case RSHIFTHD:
         case KC_RSFT:
             if (pressed) {
                 combo_timer = timer_read();
@@ -113,8 +114,8 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
                 unregister_mods(MOD_BIT(KC_RSFT));  // Always unregister after release
             }
             break;
-        case RENTERHD:
-        case LENTERHD:
+        // case RENTERHD:
+        // case LENTERHD:
         case RENTERQ:
         case LENTERQ:
             if (pressed) {
@@ -269,6 +270,9 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
     switch (keycode) {
         case LGUI_MT_S:
         case LCTL_MT_N:
+        case LCTL_MT_S:
+        case LCTL_MT_B:
+        case RCTL_MT_L:
             return 320;
         default:
             return TAPPING_TERM;
@@ -299,9 +303,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_DEL,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ESC,  KC_A,   LCTL_MT_S,  KC_D,    KC_F,    KC_G,                             KC_H,    KC_J,     KC_K,   RCTL_MT_L, KC_SCLN, KC_QUOT,
+     KC_ESC,  KC_A,    KC_S,      KC_D,    KC_F,    KC_G,                             KC_H,    KC_J,     KC_K,   RCTL_MT_L, KC_SCLN, KC_QUOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤:
-     KC_BSLS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_TAB,           KC_RALT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_EQUAL,
+     KC_BSLS, KC_Z,    KC_X,    KC_C,    KC_V,    LCTL_MT_B,    KC_TAB,           KC_RALT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_EQUAL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                   OSL(_LOWER), KC_LSFT, KC_BSPC,                 KC_SPC,  KC_RSFT, OSL(_RAISE)
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
@@ -313,7 +317,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_DEL,  _______, _______, KC_LBRC, KC_RBRC, _______,                            KC_ENT, KC_7,    KC_8,    KC_9,    KC_P0,   KC_PGDN,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_ESC,  _______, _______, KC_LPRN, KC_RPRN, _______,                            HOSA,    KC_4,    KC_5,    KC_6,    KC_PLUS, KC_PIPE,
+     KC_ESC,TO(_QWERTY), _______, KC_LPRN, KC_RPRN, _______,                            HOSA,    KC_4,    KC_5,    KC_6,    KC_PLUS, KC_PIPE,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          HOSA,    EOSA,    KC_1,    KC_2,    KC_3,    KC_MINS, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
@@ -328,7 +332,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      RM_TOGG, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, QK_BOOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     RM_NEXT, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT, RM_VALU, KC_BSLS,
+     RM_NEXT,TO(_QWERTY), KC_S,  KC_D,    KC_F,    KC_G,                               KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT, RM_VALU, KC_BSLS,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_LCTL,          HOSA,    EOSA,    KC_END,  RM_HUED, RM_SATD, RM_VALD, CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
