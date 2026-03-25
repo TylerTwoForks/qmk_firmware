@@ -7,6 +7,7 @@
 #define EOSA END_OS_AWARE
 
 #define CYCL KC_CYCLE_LAYERS
+#define DBLUS DOUBLE_UNDERSCORE
 
 #define LGUI_MT_S LGUI_T(KC_S)
 
@@ -24,11 +25,18 @@
 #define MODS_TO_NEUTRALIZE { MOD_BIT(KC_LEFT_ALT), MOD_BIT(KC_LEFT_GUI), MOD_BIT(KC_RIGHT_GUI), MOD_BIT(KC_LEFT_CTRL)|MOD_BIT(KC_LEFT_SHIFT), MOD_BIT(KC_LEFT_CTRL) }
 
 #define TAPPING_TERM 210
-#define RETRO_TAPPING
+#define COMBO_TERM 30
+// #define RETRO_TAPPING
 
 #define NO_AUTO_SHIFT_ALPHA
-#define AUTO_SHIFT_TIMEOUT 200
-#define RETRO_SHIFT
+#define AUTO_SHIFT_TIMEOUT 120
+
+//A mod-tap key will only trigger its hold behavior if no other key was pressed within the last N milliseconds. 
+// During fast typing, keys are pressed in rapid succession (well under 150ms apart), 
+// so the mod never activates. When you intentionally hold Ctrl, you naturally pause before pressing it.
+#define REQUIRE_PRIOR_IDLE_MS 120
+
+// #define RETRO_SHIFT
 #define QUICK_TAP_TERM 0
 #define PERMISSIVE_HOLD
 

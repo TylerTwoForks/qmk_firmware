@@ -29,6 +29,7 @@ enum custom_keycodes {
     SPACE_CANCEL_CAPS,
     DESK_RIGHT,
     DESK_LEFT,
+    DOUBLE_UNDERSCORE,
 };
 
 enum combos{
@@ -88,7 +89,6 @@ bool combo_held = false;
 static uint16_t combo_timer;
 void process_combo_event(uint16_t combo_index, bool pressed) {
     switch(combo_index) {
-        // case LSHIFTHD:
         case KC_LSFT:
             if (pressed) {
                 combo_timer = timer_read();
@@ -101,7 +101,6 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
                 unregister_mods(MOD_BIT(KC_LSFT));  // Always unregister after release
             }
             break;
-        // case RSHIFTHD:
         case KC_RSFT:
             if (pressed) {
                 combo_timer = timer_read();
@@ -114,8 +113,6 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
                 unregister_mods(MOD_BIT(KC_RSFT));  // Always unregister after release
             }
             break;
-        // case RENTERHD:
-        // case LENTERHD:
         case RENTERQ:
         case LENTERQ:
             if (pressed) {
@@ -255,6 +252,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LALT));
             }
             return false;
+        case DOUBLE_UNDERSCORE:
+            if (record->event.pressed) {
+                SEND_STRING("__");
+            }
+            return false;
         case KC_CYCLE_LAYERS:
             if (!record->event.pressed) {
                 // We've already handled the keycode (doing nothing), let QMK know so no further code is run unnecessarily
@@ -280,18 +282,18 @@ void keyboard_post_init_user(void) {
     rgblight_sethsv_noeeprom(0, 0, 100); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
 };
 
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
-    switch (keycode) {
-        case LGUI_MT_S:
-        case LCTL_MT_N:
-        case LCTL_MT_S:
-        case LCTL_MT_B:
-        case RCTL_MT_L:
-            return 320;
-        default:
-            return TAPPING_TERM;
-    }
-};
+// uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
+//     switch (keycode) {
+//         // case LGUI_MT_S:
+//         // case LCTL_MT_N:
+//         // case LCTL_MT_S:
+//         // case LCTL_MT_B:
+//         // case RCTL_MT_L:
+//             // return 320;
+//         default:
+//             return TAPPING_TERM;
+//     }
+// };
 
 
 
@@ -333,9 +335,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
  TO(_QWERTY),TO(_QWERTY),DESK_LEFT,KC_LPRN,KC_RPRN,DESK_RIGHT,                        KC_HOME,    KC_4,    KC_5,    KC_6,    KC_PLUS, KC_PIPE,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          HOSA,    KC_END,    KC_1,    KC_2,    KC_3,    KC_MINS, CYCL,
+     KC_BSLS, UOSA,    CTOA,    CPOA,    POSA,    FOSA,    KC_LPRN,          HOSA,    KC_END,    KC_1,    KC_2,    KC_3,  KC_MINS,   CYCL,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    KC_F5,   KC_LGUI, KC_DEL,                    TO(_QWERTY),  KC_0,  KC_HOME
+                                    KC_F5,   KC_LGUI, KC_DEL,                    TO(_QWERTY),  KC_0,  DBLUS
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
