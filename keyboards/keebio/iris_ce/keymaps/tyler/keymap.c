@@ -282,18 +282,21 @@ void keyboard_post_init_user(void) {
     rgblight_sethsv_noeeprom(0, 0, 100); // HSV: hue=0, sat=0 (white), val=255 (max brightness)
 };
 
-// uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
-//     switch (keycode) {
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record){
+    switch (keycode) {
 //         // case LGUI_MT_S:
 //         // case LCTL_MT_N:
 //         // case LCTL_MT_S:
 //         // case LCTL_MT_B:
 //         // case RCTL_MT_L:
 //             // return 320;
-//         default:
-//             return TAPPING_TERM;
-//     }
-// };
+        case KC_SCLN:
+        case KC_SLSH:
+            return 250; //makes my tapping term bit slower for specific keys.  my right pinky is a bit slow on that key.
+        default:
+            return TAPPING_TERM;
+    }
+};
 
 
 
